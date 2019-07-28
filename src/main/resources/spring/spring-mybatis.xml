@@ -102,14 +102,14 @@
 		<!-- 定义通知器 -->
 		<aop:advisor pointcut-ref="transactionPointcut" advice-ref="transactionAdvice" />
 		<!-- 定义切面 -->
-		<aop:aspect id="aopAspect2" ref="logAspect" order="2">
-			<!--配置在service包下所有的类在调用之前都会被拦截 -->
+		<!-- <aop:aspect id="aopAspect2" ref="logAspect" order="2">
+			配置在service包下所有的类在调用之前都会被拦截
 			<aop:before pointcut-ref="transactionPointcut" method="before" />
 			<aop:after pointcut-ref="transactionPointcut" method="after" />
 			<aop:after-returning pointcut-ref="transactionPointcut" method="afterReturning" returning="returnValue" />
 			<aop:around pointcut-ref="transactionPointcut" method="around" />
 			<aop:after-throwing pointcut-ref="transactionPointcut" method="afterThrowing" throwing="exception" />
-		</aop:aspect>
+		</aop:aspect> -->
 	</aop:config>
 
 </beans>

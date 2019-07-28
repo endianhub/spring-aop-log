@@ -16,7 +16,9 @@ import org.springframework.core.NamedThreadLocal;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import com.alibaba.fastjson.JSON;
 import com.xh.aop.log.common.annotation.OperationLogger;
+import com.xh.aop.log.common.tool.ThreadPoolUtil;
 import com.xh.aop.log.model.SysLog;
 import com.xh.aop.log.service.ISysLogService;
 
@@ -46,6 +48,7 @@ public class SystemLogAspect {
 	 * @param joinPoint
 	 */
 	public void before(JoinPoint joinPoint) {
+
 		// LOGGER.info("前置通知");
 		// saveLog(joinPoint, null);
 		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
@@ -53,6 +56,13 @@ public class SystemLogAspect {
 		String message = operateContent(joinPoint, methodName, request);
 
 		LOGGER.info(" 前置通知 ： " + message);
+
+		// 前置通知 (在方法执行之前返回)用于拦截Controller层记录用户的操作的开始时间
+		// 线程绑定变量（该数据只有当前请求的线程可见）
+		Date beginTime = new Date();
+		beginTimeThreadLocal.set(beginTime);
+
+		saveLog(joinPoint, null);
 	}
 
 	/**
@@ -71,6 +81,8 @@ public class SystemLogAspect {
 		String message = this.operateContent(joinPoint, methodName, request);
 
 		LOGGER.info(" 后置通知 ： " + message);
+
+		// saveLog(joinPoint, null);
 	}
 
 	/**
@@ -88,7 +100,7 @@ public class SystemLogAspect {
 		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
 		String methodName = joinPoint.getSignature().getName();
 		String message = this.operateContent(joinPoint, methodName, request);
-		
+
 		LOGGER.info(" 异常操作 : " + message + " ，   exception ： " + exception);
 	}
 
@@ -108,6 +120,8 @@ public class SystemLogAspect {
 		String message = this.operateContent(joinPoint, methodName, request);
 
 		LOGGER.info(" 后置返回 : " + message + "，  返回的结果集为： " + returnValue);
+
+		// saveLog(joinPoint, null);
 	}
 
 	/**
@@ -131,6 +145,8 @@ public class SystemLogAspect {
 			// 打印日志
 			Object obj = point.proceed();
 			LOGGER.info(" ==== 日志环绕 ：  ===== " + message + "， 日志： " + obj);
+
+			// saveLog(point, null);
 			// 保存日志
 			return obj;
 		} catch (Throwable e) {
@@ -166,10 +182,37 @@ public class SystemLogAspect {
 			logService.insert(logs);
 		} else {
 			LOGGER.info("方法名：" + methodName);
-			if (isWriteLog(methodName)) {
-				logs.setOperation((log != null) ? log.description() : null);
-				logService.insert(logs);
-			}
+			// if (isWriteLog(methodName)) {
+			logs.setOperation((log != null) ? log.description() : null);
+
+			// 调用线程保存至数据库
+			ThreadPoolUtil.getPool().execute(new SaveSystemLogThread(logs, logService));
+			// logService.insert(logs);
+			// }
+		}
+	}
+
+	/**
+	 * <b>Title: 保存日志</b>
+	 * <p>Description: </p>
+	 * 
+	 * @author H.Yang
+	 * @email xhaimail@163.com
+	 * @date 2019年7月28日
+	 */
+	private static class SaveSystemLogThread implements Runnable {
+		private SysLog logs;
+		private ISysLogService logService;
+
+		public SaveSystemLogThread(SysLog logs, ISysLogService logService) {
+			this.logs = logs;
+			this.logService = logService;
+		}
+
+		@Override
+		public void run() {
+			LOGGER.info(" logs : " + Thread.currentThread().getName() + " === " + JSON.toJSONString(logs));
+			logService.insert(logs);
 		}
 	}
 
