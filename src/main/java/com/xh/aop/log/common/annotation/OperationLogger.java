@@ -1,4 +1,4 @@
-package com.annotation;
+package com.xh.aop.log.common.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

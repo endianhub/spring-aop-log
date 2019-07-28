@@ -1,7 +1,6 @@
-package com.service;
+package com.xh.aop.log.service;
 
-import com.model.SysLog;
-
+import com.xh.aop.log.model.SysLog;
 
 /**
  * 

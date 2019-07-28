@@ -14,8 +14,8 @@
 	<!-- 配置哪些是静态资源，缺省Servlet 直接返回 -->
 	<mvc:resources mapping="/static/**" location="/static/" cache-period="31556926" />
 
-	<context:component-scan base-package="com.controller" />
-	
+	<context:component-scan base-package="com.xh.aop.log.controller" />
+
 	<!-- 配置结果页面 前缀和后缀 -->
 	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/WEB-INF/views/"></property>
@@ -23,35 +23,36 @@
 	</bean>
 
 	<!-- FastJson注入 -->
-    <mvc:annotation-driven>
-        <mvc:message-converters register-defaults="true">
-            <!-- 避免IE执行AJAX时,返回JSON出现下载文件 -->
-            <!-- FastJson -->
-            <bean id="fastJsonHttpMessageConverter"
-                  class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
-                <property name="supportedMediaTypes">
-                    <list>
-                        <!-- 这里顺序不能反，一定先写text/html,不然ie下出现下载提示 -->
-                        <value>text/html;charset=UTF-8</value>
-                        <value>application/json;charset=UTF-8</value>
-                    </list>
-                </property>
-            </bean>
-        </mvc:message-converters>
-    </mvc:annotation-driven>
+	<mvc:annotation-driven>
+		<mvc:message-converters register-defaults="true">
+			<!-- 避免IE执行AJAX时,返回JSON出现下载文件 -->
+			<!-- FastJson -->
+			<bean id="fastJsonHttpMessageConverter" class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<!-- 这里顺序不能反，一定先写text/html,不然ie下出现下载提示 -->
+						<value>text/html;charset=UTF-8</value>
+						<value>application/json;charset=UTF-8</value>
+					</list>
+				</property>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
 
 
-	<bean id="logAspects" class="com.aop.LogAspect" />
+	<!-- <aop:pointcut expression="@annotation(com.xh.aop.log.common.annotation.Validate)" id="validateCut" /> -->
 
-	<!-- proxy-target-class属性值决定是基于接口的还是基于类的代理被创建。 如果proxy-target-class 属性值被设置为true，那么基于类的代理将起作用（这时需要cglib库）。 如果proxy-target-class属值被设置为false或者这个属性被省略，那么标准的JDK基于接口的代理 -->
-	<aop:aspectj-autoproxy proxy-target-class="true" />
-
+	<!-- Controller是归mvc层管理的,按照原来的方法,根本拦截不到controller的方法，所以只有写到Controller里才能使用aop拦截 -->
 	<aop:config>
-		<aop:aspect ref="logAspect" order="2">
-			<aop:pointcut id="transactionPointcut" expression="execution(* com.controller.*.*(..))" />
-			<aop:before pointcut-ref="transactionPointcut" method="before" />
-			<!-- <aop:after-throwing pointcut-ref="transactionPointcut" throwing="exception" arg-names="exception" method="afterThrowing"/> -->
+		<aop:aspect id="aopAspect1" ref="logAspect" order="1">
+			<aop:pointcut id="aspectAop" expression="execution(* com.xh.aop.log.controller..*.*(..))" />
+			<aop:before pointcut-ref="aspectAop" method="before" />
+			<aop:after pointcut-ref="aspectAop" method="after" />
+			<aop:after-returning pointcut-ref="aspectAop" method="afterReturning" returning="returnValue" />
+			<aop:around pointcut-ref="aspectAop" method="around" />
+			<aop:after-throwing pointcut-ref="aspectAop" method="afterThrowing" throwing="exception" />
 		</aop:aspect>
 	</aop:config>
+
 
 </beans>

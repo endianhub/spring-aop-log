@@ -1,6 +1,6 @@
-package com.dao;
+package com.xh.aop.log.dao;
 
-import com.model.SysLog;
+import com.xh.aop.log.model.SysLog;
 
 
 /**

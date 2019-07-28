@@ -1,18 +1,18 @@
-package com.service;
+package com.xh.aop.log.dao;
 
 import java.util.List;
 import java.util.Map;
 
-import com.model.User;
+import com.xh.aop.log.model.User;
 
 /**
  * 
  * @author Dingdong
  * @date 2017年5月3日
  */
-public interface IUserService{
-	
-	int insertUser(User user);
+public interface IUserDao {
+
+	int insert(User user);
 
 	int delete(Integer paramId);
 
@@ -20,10 +20,8 @@ public interface IUserService{
 
 	User findById(Integer paramId);
 
-	String selectJson();
-	
 	List<User> selectAll();
 	
 	List<Map<String, String>> selectMap();
-	
+
 }

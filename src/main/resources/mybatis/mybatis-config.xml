@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD SQL Map Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
-<!-- | plugins在配置文件中的位置必须符合要求，否则会报错，顺序如下: | properties?, settings?, | typeAliases?, 
-	typeHandlers?, | objectFactory?,objectWrapperFactory?, | plugins?, | environments?, 
-	databaseIdProvider?, mappers? | -->
+<!-- | plugins在配置文件中的位置必须符合要求，否则会报错，顺序如下: | properties?, settings?, | typeAliases?, typeHandlers?, | objectFactory?,objectWrapperFactory?, 
+	| plugins?, | environments?, databaseIdProvider?, mappers? | -->
 <configuration>
 	<plugins>
 		<!-- SQL 执行性能分析，开发环境使用，线上不推荐。 maxTime 指的是 sql 最大执行时长 -->

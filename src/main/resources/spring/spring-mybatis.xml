@@ -52,7 +52,7 @@
 		<!-- 自动扫描Mapping.xml文件 -->
 		<property name="mapperLocations" value="classpath:mybatis/mapper/*.xml" />
 		<property name="configLocation" value="classpath:mybatis/mybatis-config.xml" />
-		<property name="typeAliasesPackage" value="com.model" />
+		<property name="typeAliasesPackage" value="com.xh.aop.log.model" />
 		<property name="plugins">
 			<array>
 				<!-- 分页插件配置 -->
@@ -71,7 +71,7 @@
 
 	<!-- MyBatis 动态扫描 -->
 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-		<property name="basePackage" value="com.dao" />
+		<property name="basePackage" value="com.xh.aop.log.dao" />
 	</bean>
 
 	<!-- 配置事务管理 -->
@@ -91,20 +91,24 @@
 	</tx:advice>
 
 	<!--将日志类注入到bean中。 -->
-	<bean id="logAspect" class="com.aop.LogAspect"></bean>
+	<bean id="logAspect" class="com.xh.aop.log.common.aop.SystemLogAspect"></bean>
 
 	<!-- 启用@AspectJ支持 -->
-	<aop:aspectj-autoproxy/>
+	<aop:aspectj-autoproxy />
 
 	<!-- 配置切面 -->
 	<aop:config>
-		<aop:pointcut id="transactionPointcut" expression="execution(* com.service..*.*(..))" />
+		<aop:pointcut id="transactionPointcut" expression="execution(* com.xh.aop.log.service..*.*(..))" />
+		<!-- 定义通知器 -->
 		<aop:advisor pointcut-ref="transactionPointcut" advice-ref="transactionAdvice" />
-		<!--调用日志类 -->
-		<aop:aspect id="LogAspect" ref="logAspect" order="1">
-		<!--配置在service包下所有的类在调用之前都会被拦截 -->
-			<!-- <aop:after-returning pointcut-ref="transactionPointcut" returning="argObj" arg-names="argObj" method="afterReturning"/> -->
-			<aop:after-throwing pointcut-ref="transactionPointcut" throwing="exception" arg-names="exception" method="afterThrowing"/>
+		<!-- 定义切面 -->
+		<aop:aspect id="aopAspect2" ref="logAspect" order="2">
+			<!--配置在service包下所有的类在调用之前都会被拦截 -->
+			<aop:before pointcut-ref="transactionPointcut" method="before" />
+			<aop:after pointcut-ref="transactionPointcut" method="after" />
+			<aop:after-returning pointcut-ref="transactionPointcut" method="afterReturning" returning="returnValue" />
+			<aop:around pointcut-ref="transactionPointcut" method="around" />
+			<aop:after-throwing pointcut-ref="transactionPointcut" method="afterThrowing" throwing="exception" />
 		</aop:aspect>
 	</aop:config>
 

@@ -1,4 +1,4 @@
-package com.controller;
+package com.xh.aop.log.controller;
 
 import java.util.List;
 
@@ -10,9 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.alibaba.fastjson.JSON;
-import com.annotation.OperationLogger;
-import com.model.User;
-import com.service.IUserService;
+import com.xh.aop.log.common.annotation.OperationLogger;
+import com.xh.aop.log.model.User;
+import com.xh.aop.log.service.IUserService;
 
 /**
  * 
@@ -36,12 +36,11 @@ public class UserController {
 	 */
 	@RequestMapping("forwordIndex")
 	@OperationLogger(description = "查询")
+	// @ApiOperation(value = "查询")
 	public String forwordIndex(Model model) {
-
 		List<User> list = userService.selectAll();
 		model.addAttribute("users", JSON.toJSONString(list));
 		model.addAttribute("user", list);
-
 		return "index";
 	}
 
@@ -57,10 +56,8 @@ public class UserController {
 	@RequestMapping("saveUser")
 	@OperationLogger(description = "添加")
 	public String saveUser(User user) {
-
 		System.out.println(user.toString());
 		int no = userService.insertUser(user);
-
 		return no > 0 ? "success" : "error";
 	}
 
@@ -76,10 +73,8 @@ public class UserController {
 	@RequestMapping("saveRequest")
 	@OperationLogger(description = "添加")
 	public String saveRequest(HttpServletRequest request) {
-
 		String name = request.getParameter("name");
 		String password = request.getParameter("name");
-
 		int no = userService.insertUser(new User(name, password, 0, 0));
 		return 1 > 0 ? "success" : "error";
 	}
@@ -96,7 +91,6 @@ public class UserController {
 	@RequestMapping("delete")
 	@OperationLogger(description = "删除")
 	public String delete(int paramId) {
-
 		int no = userService.delete(paramId);
 		return 1 > 0 ? "success" : "error";
 	}
@@ -113,7 +107,6 @@ public class UserController {
 	@RequestMapping("findById")
 	@OperationLogger(description = "根据Id查询")
 	public String findById(Model model, int paramId) {
-
 		User user = userService.findById(paramId);
 		model.addAttribute("user", user);
 		return "edit";
@@ -131,7 +124,6 @@ public class UserController {
 	@RequestMapping("update")
 	@OperationLogger(description = "更新")
 	public String update(User user) {
-
 		int no = userService.update(user);
 		return 1 > 0 ? "success" : "error";
 	}

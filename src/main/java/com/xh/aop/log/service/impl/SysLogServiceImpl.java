@@ -1,12 +1,12 @@
-package com.service.impl;
+package com.xh.aop.log.service.impl;
 
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
 
-import com.dao.ISysLogDao;
-import com.model.SysLog;
-import com.service.ISysLogService;
+import com.xh.aop.log.dao.ISysLogDao;
+import com.xh.aop.log.model.SysLog;
+import com.xh.aop.log.service.ISysLogService;
 
 /**
  * 

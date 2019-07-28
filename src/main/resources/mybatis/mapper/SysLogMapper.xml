@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.dao.ISysLogDao">
+<mapper namespace="com.xh.aop.log.dao.ISysLogDao">
 
 	<insert id="insert" parameterType="SysLog">
 		INSERT INTO sys_log(user_id, content, operation, date_time, abnormity)

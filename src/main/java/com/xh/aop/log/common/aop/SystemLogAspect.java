@@ -1,4 +1,4 @@
-package com.aop;
+package com.xh.aop.log.common.aop;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -7,16 +7,18 @@ import java.util.Enumeration;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.springframework.core.NamedThreadLocal;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.annotation.OperationLogger;
-import com.model.SysLog;
-import com.service.ISysLogService;
+import com.xh.aop.log.common.annotation.OperationLogger;
+import com.xh.aop.log.model.SysLog;
+import com.xh.aop.log.service.ISysLogService;
 
 /**
  * AOP切点类
@@ -24,11 +26,13 @@ import com.service.ISysLogService;
  * @author Dingdong
  * @date 2017年5月23日
  */
-public class LogAspect {
+public class SystemLogAspect {
 
-	private static final Logger LOGGER = LogManager.getLogger(LogAspect.class);
+	private static final Logger LOGGER = LogManager.getLogger(SystemLogAspect.class);
 	private static final String LOG_CONTENT = "[类名]:%s,[方法]:%s,[参数]:%s";
 	private static final String[] METHOD_CONTENT = { "insert", "delete", "update", "save" };
+
+	private static final ThreadLocal<Date> beginTimeThreadLocal = new NamedThreadLocal<Date>("ThreadLocal beginTime");
 
 	@Resource
 	private ISysLogService logService;
@@ -42,8 +46,31 @@ public class LogAspect {
 	 * @param joinPoint
 	 */
 	public void before(JoinPoint joinPoint) {
-		LOGGER.info("前置通知");
-		saveLog(joinPoint, null);
+		// LOGGER.info("前置通知");
+		// saveLog(joinPoint, null);
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+		String methodName = joinPoint.getSignature().getName();
+		String message = operateContent(joinPoint, methodName, request);
+
+		LOGGER.info(" 前置通知 ： " + message);
+	}
+
+	/**
+	 * <b>Title: </b>
+	 * <p>Description: </p>
+	 * 
+	 * @author H.Yang
+	 * 
+	 * @param joinPoint
+	 */
+	private void after(JoinPoint joinPoint) {
+		// LOGGER.info("后置通知");
+		// saveLog(joinPoint, null);
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+		String methodName = joinPoint.getSignature().getName();
+		String message = this.operateContent(joinPoint, methodName, request);
+
+		LOGGER.info(" 后置通知 ： " + message);
 	}
 
 	/**
@@ -56,8 +83,61 @@ public class LogAspect {
 	 * @param argObj
 	 */
 	public void afterThrowing(JoinPoint joinPoint, Exception exception) {
-		LOGGER.info("异常操作");
-		saveLog(joinPoint, exception);
+		// LOGGER.info("异常操作");
+		// saveLog(joinPoint, exception);
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+		String methodName = joinPoint.getSignature().getName();
+		String message = this.operateContent(joinPoint, methodName, request);
+		
+		LOGGER.info(" 异常操作 : " + message + " ，   exception ： " + exception);
+	}
+
+	/**
+	 * <b>Title: </b>
+	 * <p>Description: </p>
+	 * 
+	 * @author H.Yang
+	 * 
+	 * @param point
+	 * @param returnValue
+	 */
+	private void afterReturning(JoinPoint joinPoint, Object returnValue) {
+		// LOGGER.info("后置返回");
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+		String methodName = joinPoint.getSignature().getName();
+		String message = this.operateContent(joinPoint, methodName, request);
+
+		LOGGER.info(" 后置返回 : " + message + "，  返回的结果集为： " + returnValue);
+	}
+
+	/**
+	 * <b>Title: </b>
+	 * <p>Description: </p>
+	 * 
+	 * @author H.Yang
+	 * 
+	 * @param point
+	 * @return
+	 */
+	private Object around(ProceedingJoinPoint point) {
+		// LOGGER.info("日志环绕");
+		try {
+			HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+			String className = point.getTarget().getClass().getName();
+			String methodName = point.getSignature().getName();
+			Method method = this.currentMethod(point, methodName);
+
+			String message = this.operateContent(point, methodName, request);
+			// 打印日志
+			Object obj = point.proceed();
+			LOGGER.info(" ==== 日志环绕 ：  ===== " + message + "， 日志： " + obj);
+			// 保存日志
+			return obj;
+		} catch (Throwable e) {
+			e.printStackTrace();
+			return null;
+		}
+
 	}
 
 	/**

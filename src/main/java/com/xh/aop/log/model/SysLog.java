@@ -1,4 +1,4 @@
-package com.model;
+package com.xh.aop.log.model;
 
 import java.util.Date;
 
